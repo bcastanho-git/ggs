@@ -93,7 +93,7 @@
     <select id="player2" required>
       <option value="">Selecione o Jogador 2</option>
     </select>
-
+    
     
     <button type="submit">Salvar</button>
     <button id="shareButton" style="display: none; background-color: #4CAF50; color: white; padding: 10px 15px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer;">
@@ -114,6 +114,19 @@
       </tr>
     </thead>
     <tbody id="rankingTable">
+      <!-- Dados dinâmicos -->
+    </tbody>
+  </table>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Jogador</th>
+        <th>Semanas top 10</th>
+      </tr>
+    </thead>
+    <tbody id="rankingWeekTable">
       <!-- Dados dinâmicos -->
     </tbody>
   </table>
@@ -189,6 +202,43 @@
         tableBody.appendChild(row);
       });
     }
+
+     // Atualiza a tabela do ranking Week
+     function updateRankingWeekTable() {
+
+      const tableBody = document.getElementById("rankingWeekTable");
+          tableBody.innerHTML = "";
+          
+          rankingWeekData.forEach((player, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${player.position}</td>
+              <td>${player.name}</td>
+              <td>${player.weeks}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+    }
+
+      // Atualiza a tabela do ranking
+  function updateRankingWeekTable(rankingWeekData) {
+      const tableBody = document.getElementById("rankingWeekTable");
+      tableBody.innerHTML = "";
+      console.log("update 09")
+      console.log(rankingWeekData)
+
+       rankingWeekData.forEach(player => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+              <td>${player.position}</td>
+              <td>${player.name}</td>
+              <td>${player.weeks}</td>
+          `;
+          console.log("1")
+          tableBody.appendChild(row);
+      });
+  }
+
 
     let lastMatchDetails = "";
 
@@ -292,6 +342,33 @@
       }
   }
 
+  // Busca o ranking da API
+  const API_RANKING_WEEK_URL = "https://rgbcq6xdi8.execute-api.us-east-1.amazonaws.com/production/getRankingWeek";
+
+  
+async function fetchRankingWeek() {
+    try {
+        const response = await fetch(API_RANKING_WEEK_URL);
+        const data = await response.json();
+        console.log(data)
+
+        if (data.status === "success" && data.ranking_week) {
+            const rankingWeekData = data.ranking_week.map((player, index) => ({
+                position: index + 1,
+                name: player.names,
+                weeks:player.weeks
+            }));
+            console.log(rankingWeekData)
+
+            updateRankingWeekTable(rankingWeekData);
+        }
+    } catch (error) {
+        console.error("Erro ao buscar ranking:", error);
+    }
+}
+
+  
+
   // Atualiza a tabela do ranking
   function updateRankingTable(rankingData) {
       const tableBody = document.getElementById("rankingTable");
@@ -317,6 +394,7 @@
     populateScoreSelects();
     // Chama a função ao carregar a página
     fetchRanking();
+    fetchRankingWeek();
   </script>
 </body>
 </html>
